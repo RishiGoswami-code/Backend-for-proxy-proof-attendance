@@ -23,7 +23,7 @@ class pyobjectID(ObjectId):
 class studentCreateModel(BaseModel):
   name : str = Field(..., examples="Chandan Giri")
   batch: str = Field(..., examples="Btech 2028")
-  roll_num: int = Field(..., examples=202410101200035)
+  roll_num: str = Field(..., examples='202410101XXX')
   email_id: EmailStr = Field(..., examples="su-24036@sitare.org")
   section: Optional[str] = Field(examples="A")
 
@@ -33,7 +33,7 @@ class studentCreateModel(BaseModel):
       'example': {
         'name': 'Chandan Giri',
         'batch': "Batch 2028",
-        'roll_num': 202410101200035, 
+        'roll_num': '202410101XXX', 
         'email_id': "su-24036@sitare.org", 
         'section': "B"
       }
@@ -54,7 +54,7 @@ class StudentResponsemodel(studentCreateModel):
         'name': "Chandan Giri",
         'batch': "Batch 2028",
         "email_id": "su-2024@sitare.org",
-        'roll_num': 202410101200035,
+        'roll_num': '202410101XXX',
         'section': "B",
         'created_at': "19/07/2025T15:29:45"
       }
