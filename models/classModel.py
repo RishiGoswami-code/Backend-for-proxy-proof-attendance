@@ -10,7 +10,7 @@ class pyobjectID(ObjectId):
     yield cls.validate
   @classmethod
   def validate(cls, v):
-    if not ObjectId.is_valid(v):
+    if not object.is_valid(v):
       raise ValueError("Invalid ObjectID")
     return ObjectId(v)
   
@@ -20,26 +20,19 @@ class pyobjectID(ObjectId):
 
 
 
-class studentCreateModel(BaseModel):
-  name : str = Field(..., examples="Chandan Giri")
-  batch: str = Field(..., examples="Btech 2028")
-  roll_num: str = Field(..., examples='202410101XXX')
-  email_id: EmailStr = Field(..., examples="su-24036@sitare.org")
-  section: Optional[str] = Field(examples="A")
+class classCreateModel(BaseModel):
+  batch_name : str = Field(..., examples="Batch 2028")
+  
 
   class config:
     allow_population_by_class = True
     schema_extra = {
       'example': {
-        'name': 'Chandan Giri',
-        'batch': "Batch 2028",
-        'roll_num': '202410101XXX', 
-        'email_id': "su-24036@sitare.org", 
-        'section': "B"
+        'batch_name': "Batch 2028",
       }
     }
 
-class StudentResponsemodel(studentCreateModel):
+class classResponsemodel(classCreateModel):
   id: pyobjectID= Field(default_factory = pyobjectID, alias='_id')
   created_at: Optional[datetime] = Field(default_factory=datetime.utcnow )
 
@@ -51,11 +44,7 @@ class StudentResponsemodel(studentCreateModel):
     schema_extra = {
       'example':{
         '_id': 'esurf1234vj324n',
-        'name': "Chandan Giri",
         'batch': "Batch 2028",
-        "email_id": "su-2024@sitare.org",
-        'roll_num': '202410101XXX',
-        'section': "B",
         'created_at': "19/07/2025T15:29:45"
       }
     }
