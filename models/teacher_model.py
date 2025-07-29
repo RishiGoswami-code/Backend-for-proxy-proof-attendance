@@ -2,47 +2,50 @@ from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
 from bson import ObjectId
 from typing import Optional, List
-from student_model import pyobjectID
+from .admin_model import PyObjectId
 
 
+class TeacherCreateModel(BaseModel):
+    name: str = Field(..., example='Achal Sir')
+    subjects: List[str] = Field(..., example=['Maths', "Data Handling In Python"])
+    batches: List[str] = Field(..., example=['BTech 2028 section A', 'BTech 2028 section B'])
+    email_id: EmailStr = Field(..., example="achal.sitare@sitare.org")
+    password: str = Field(..., min_length=6)
 
-class teacherCreateModels(BaseModel):
-  name: str = Field(..., examples='Achal Sir')
-  subject: List = Field(..., examples=['Maths', "Data Handling In Python"])
-  Batch: List = Field(..., examples=['Batch 2028 section A', 'Batch 2028 section B'])
-  email_id: EmailStr = Field(..., examples="achal.sitare@sitare.org")
-  
-  class config:
-    allow_data_from_field = True
-    schema_extra = {
-      'examples': {
-        '_id':"qwertyuiop",
-        'name':"Achal Sir", 
-        'subject':['Maths', 'Data Handling In Python'],
-        'Batch':['Batch 2028 section A', 'Batch 2028 section B'],
-        'email_id':'achal.sitare@sitare.org',
-        'create_at':"20/07/2025T23:51:1",
-      }
-    }
+    class Config:
+        allow_population_by_field_name = True
+        schema_extra = {
+            'example': {
+                'name': "Achal Sir",
+                'subjects': ['Maths', 'Data Handling In Python'],
+                'batches': ['BTech 2028 section A', 'BTech 2028 section B'],
+                'email_id': 'achal.sitare@sitare.org',
+                'password': "teacherpassword123"
+            }
+        }
 
-class teacherResponseModels(teacherCreateModels):
-  id: pyobjectID= Field(default_factory = pyobjectID, alias='_id')
-  created_at: Optional[datetime] = Field(default_factory=datetime.utcnow )
 
-  class config:
-    allow_data_from_field = True
-    json_encoder ={
-      ObjectId: str,
-      datetime: lambda v: v.isoformat(),}
-    schema_extra = {
-      'examples': {
-        '_id':"qwertyuiop",
-        'name':"Achal Sir", 
-        'subject':['Maths', 'Data Handling In Python'],
-        'Batch':['Batch 2028 section A', 'Batch 2028 section B'],
-        'email_id':'achal.sitare@sitare.org',
-        'create_at':"20/07/2025T23:51:1",
-      }
-    }
+class TeacherResponseModel(TeacherCreateModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    is_active: bool = Field(default=True)
+    device_token: Optional[str] = Field(None)
 
-  
+    class Config:
+        json_encoders = {
+            ObjectId: str,
+            datetime: lambda v: v.isoformat(),
+        }
+        allow_population_by_field_name = True
+        schema_extra = {
+            'example': {
+                '_id': "qwertyuiop",
+                'name': "Achal Sir",
+                'subjects': ['Maths', 'Data Handling In Python'],
+                'batches': ['BTech 2028 section A', 'BTech 2028 section B'],
+                'email_id': 'achal.sitare@sitare.org',
+                'created_at': "2025-07-20T23:51:01",
+                'is_active': True,
+                'device_token': "fcm_token_here"
+            }
+        }
