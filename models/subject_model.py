@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional, Any
 from datetime import datetime
 from bson import ObjectId
 from .admin_model import PyObjectId
@@ -11,9 +11,9 @@ class SubjectCreateModel(BaseModel):
     section: Optional[str] = Field(None, example="A")
     teacher_id: Optional[str] = Field(None)
 
-    class Config:
-        allow_population_by_field_name = True
-        schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_schema_extra={
             'example': {
                 'subject_name': 'Data structures and algorithm',
                 'batch': "BTech 2028",
@@ -21,20 +21,26 @@ class SubjectCreateModel(BaseModel):
                 'teacher_id': "teacher_id_here"
             }
         }
+    )
 
 
-class SubjectResponseModel(SubjectCreateModel):
+class SubjectResponseModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
+    subject_name: str = Field(..., example="Data structures and algorithm")
+    batch: str = Field(..., example="BTech 2028")
+    section: Optional[str] = Field(None, example="A")
+    teacher_id: Optional[str] = Field(None)
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
     is_active: bool = Field(default=True)
 
-    class Config:
-        json_encoders = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={
             ObjectId: str,
             datetime: lambda v: v.isoformat(),
-        }
-        allow_population_by_field_name = True
-        schema_extra = {
+        },
+        json_schema_extra={
             'example': {
                 '_id': 'esurf1234vj324n',
                 'subject_name': "Data structures and algorithm",
@@ -45,3 +51,5 @@ class SubjectResponseModel(SubjectCreateModel):
                 'is_active': True
             }
         }
+    )
+

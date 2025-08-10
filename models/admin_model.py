@@ -1,23 +1,29 @@
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, GetCoreSchemaHandler
+from typing import Optional, Any, Dict
 from datetime import datetime
 from bson import ObjectId
+from pydantic_core import CoreSchema
 
 
+# Pydantic v2 replaces the nested Config class with a ConfigDict
 class PyObjectId(ObjectId):
     @classmethod
     def __get_validators__(cls):
         yield cls.validate
 
     @classmethod
-    def validate(cls, v):
+    def validate(cls, v: Any) -> ObjectId:
         if not ObjectId.is_valid(v):
-            raise ValueError("Invalid ObjectID")
+            raise ValueError("Invalid ObjectId")
         return ObjectId(v)
 
     @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
+    def __get_pydantic_json_schema__(
+        cls, core_schema: CoreSchema, handler: GetCoreSchemaHandler
+    ) -> Dict[str, Any]:
+        json_schema = handler(core_schema)
+        json_schema['type'] = 'string'
+        return json_schema
 
 
 class AdminModel(BaseModel):
@@ -25,29 +31,33 @@ class AdminModel(BaseModel):
     email_id: EmailStr = Field(..., example="amit@sitare.org")
     password: str = Field(..., min_length=6)
 
-    class Config:
-        allow_population_by_field_name = True
-        schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_schema_extra={
             'example': {
                 'name': 'Amit Singhal',
                 'email_id': "amit@sitare.org",
                 'password': "securepassword123"
             }
         }
+    )
 
 
-class AdminResponseModel(AdminModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
+class AdminResponseModel(BaseModel):
+    id: PyObjectId = Field(alias='_id')
+    name: str = Field(..., example="Amit Singhal")
+    email_id: EmailStr = Field(..., example="amit@sitare.org")
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
     is_active: bool = Field(default=True)
 
-    class Config:
-        json_encoders = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={
             ObjectId: str,
             datetime: lambda v: v.isoformat(),
-        }
-        allow_population_by_field_name = True
-        schema_extra = {
+        },
+        json_schema_extra={
             'example': {
                 '_id': 'esurf1234vj324n',
                 'name': "Amit Singhal",
@@ -56,3 +66,5 @@ class AdminResponseModel(AdminModel):
                 'is_active': True
             }
         }
+    )
+

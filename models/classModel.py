@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional, Any
 from datetime import datetime
 from bson import ObjectId
 from .admin_model import PyObjectId
@@ -9,28 +9,32 @@ class ClassCreateModel(BaseModel):
     batch_name: str = Field(..., example="Batch 2028")
     description: Optional[str] = Field(None, example="BTech 2028 Batch")
 
-    class Config:
-        allow_population_by_field_name = True
-        schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_schema_extra={
             'example': {
                 'batch_name': "Batch 2028",
                 'description': "BTech 2028 Batch"
             }
         }
+    )
 
 
-class ClassResponseModel(ClassCreateModel):
+class ClassResponseModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
+    batch_name: str = Field(..., example="Batch 2028")
+    description: Optional[str] = Field(None, example="BTech 2028 Batch")
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
     is_active: bool = Field(default=True)
 
-    class Config:
-        json_encoders = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={
             ObjectId: str,
             datetime: lambda v: v.isoformat(),
-        }
-        allow_population_by_field_name = True
-        schema_extra = {
+        },
+        json_schema_extra={
             'example': {
                 '_id': 'esurf1234vj324n',
                 'batch_name': "Batch 2028",
@@ -39,3 +43,5 @@ class ClassResponseModel(ClassCreateModel):
                 'is_active': True
             }
         }
+    )
+

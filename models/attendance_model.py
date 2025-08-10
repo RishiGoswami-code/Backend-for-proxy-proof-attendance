@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional, Any
 from datetime import datetime
 from bson import ObjectId
 from .admin_model import PyObjectId
@@ -15,9 +15,9 @@ class AttendanceCreateModel(BaseModel):
     image_url: str = Field(..., description="URL of the captured image")
     is_proxy: bool = Field(False, description="Flag for proxy detection")
 
-    class Config:
-        allow_population_by_field_name = True
-        schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_schema_extra={
             'example': {
                 'student_id': "student_id_here",
                 'subject_id': "subject_id_here",
@@ -29,20 +29,30 @@ class AttendanceCreateModel(BaseModel):
                 'is_proxy': False
             }
         }
+    )
 
 
-class AttendanceResponseModel(AttendanceCreateModel):
+class AttendanceResponseModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias='_id')
+    student_id: str = Field(..., description="ID of the student")
+    subject_id: str = Field(..., description="ID of the subject")
+    class_id: str = Field(..., description="ID of the class")
+    teacher_id: str = Field(..., description="ID of the teacher")
+    session_id: str = Field(..., description="ID of the attendance session")
+    location: dict = Field(..., description="GPS coordinates of attendance")
+    image_url: str = Field(..., description="URL of the captured image")
+    is_proxy: bool = Field(False, description="Flag for proxy detection")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     status: str = Field("Present", description="Attendance status")
 
-    class Config:
-        json_encoders = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={
             ObjectId: str,
             datetime: lambda v: v.isoformat(),
-        }
-        allow_population_by_field_name = True
-        schema_extra = {
+        },
+        json_schema_extra={
             'example': {
                 '_id': "attendance_id_here",
                 'student_id': "student_id_here",
@@ -57,3 +67,5 @@ class AttendanceResponseModel(AttendanceCreateModel):
                 'status': "Present"
             }
         }
+    )
+
