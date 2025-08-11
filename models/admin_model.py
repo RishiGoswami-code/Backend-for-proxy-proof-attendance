@@ -5,14 +5,19 @@ from bson import ObjectId
 from pydantic_core import CoreSchema
 
 
-# Pydantic v2 replaces the nested Config class with a ConfigDict
 class PyObjectId(ObjectId):
     @classmethod
     def __get_validators__(cls):
         yield cls.validate
 
     @classmethod
-    def validate(cls, v: Any) -> ObjectId:
+    def validate(cls, v: Any, _info: Any) -> ObjectId:
+        """
+        Validates that the provided value is a valid ObjectId.
+        
+        NOTE: Pydantic v2 passes an extra `info` argument to validator functions.
+        We accept it here as `_info` to avoid the TypeError.
+        """
         if not ObjectId.is_valid(v):
             raise ValueError("Invalid ObjectId")
         return ObjectId(v)
@@ -67,4 +72,3 @@ class AdminResponseModel(BaseModel):
             }
         }
     )
-

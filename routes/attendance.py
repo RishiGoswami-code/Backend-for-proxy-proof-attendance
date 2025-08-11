@@ -97,8 +97,8 @@ def compare_faces(known_face_image_path: str, live_image_data: str) -> bool:
 
 # Pydantic model for starting an attendance session
 class AttendanceSessionStartModel(BaseModel):
-    subject_id: str
-    class_id: str
+    subject_name: str
+    class_name: str
 
 @router.post("/start-session", status_code=status.HTTP_201_CREATED)
 async def start_attendance_session(
@@ -113,7 +113,8 @@ async def start_attendance_session(
     teacher_id = str(current_user.id)
     
     # Check if the teacher is assigned to the class and subject
-    subject = await db["subjects"].find_one({"_id": ObjectId(session_data.subject_id), "teacher_id": teacher_id})
+    # We now query by subject_name and teacher_id to be more robust
+    subject = await db["subjects"].find_one({"subject_name": session_data.subject_name, "teacher_id": teacher_id})
     if not subject:
         raise HTTPException(status_code=403, detail="You are not authorized to start a session for this subject.")
 
@@ -124,8 +125,8 @@ async def start_attendance_session(
     payload = {
         "session_id": session_id,
         "teacher_id": teacher_id,
-        "class_id": session_data.class_id,
-        "subject_id": session_data.subject_id,
+        "class_id": session_data.class_name,
+        "subject_id": str(subject["_id"]), # Store the actual ObjectId for the subject
         "exp": (datetime.utcnow() + timedelta(minutes=2)).timestamp() # Token expires in 2 minutes
     }
     

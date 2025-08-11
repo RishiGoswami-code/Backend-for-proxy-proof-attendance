@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
-# Use absolute imports for routes from the top-level package
-from routes import admin, student, teacher, classRoutes, subject, attendance
+# Import the 'auth' router
+from routes import admin, student, teacher, classRoutes, subject, attendance, auth
 from database.mongo import AsyncDatabase
 
 # Load environment variables from .env file
@@ -41,7 +41,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Include all the routers, including the newly added 'auth' router
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(admin.router, prefix="/admin", tags=["Admin"])
 app.include_router(student.router, prefix="/student", tags=["Student"])
 app.include_router(teacher.router, prefix="/teacher", tags=["Teacher"])
